@@ -233,7 +233,9 @@ class ScannerSession(QWidget):
     # Matikan scanner tutup sesi.
     def tutup_sesi(self):
         self._timer_cam.stop(); self._timer_match.stop()
-        if self._cam: self._cam.release()
+        if self._cam:
+            self._cam.release()
+            self._cam = None
         self.cam_label.clear()
         if self._session_id:
             self.db.close_session(self._session_id)
@@ -276,3 +278,20 @@ class ScannerSession(QWidget):
                 self.lbl_scan_status.setText("Wajah tidak dikenali")
                 self.lbl_scan_status.setStyleSheet(f"font-size:16px;font-weight:bold;color:{theme.DANGER};")
                 self._last_id = -1; self._last_time = now
+
+    # Matikan kamera sementara saat pindah tab untuk mencegah resource leak
+    def hideEvent(self, event):
+        if self._cam:
+            self._timer_cam.stop()
+            self._timer_match.stop()
+            self._cam.release()
+            self._cam = None
+        super().hideEvent(event)
+
+    # Resume kamera jika kembali ke tab scanner saat sesi masih aktif
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.stack.currentIndex() == 2 and not self._cam:
+            self._cam = cv2.VideoCapture(0)
+            self._timer_cam.start(30)
+            self._timer_match.start()

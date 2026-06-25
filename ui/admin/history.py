@@ -75,7 +75,7 @@ class GlobalHistory(QWidget):
             btn = QPushButton("  Buka Riwayat")
             btn.setIcon(qta.icon("fa5s.folder-open", color="white"))
             btn.clicked.connect(
-                lambda _, cn=c["nama_matkul"]: self.buka_riwayat(cn)
+                lambda _, cid=c["kode_matkul"]: self.buka_riwayat(cid)
             )
             w = QWidget()
             hl = QHBoxLayout(w)
@@ -85,12 +85,12 @@ class GlobalHistory(QWidget):
         self.tbl_courses.setSortingEnabled(True)
 
     # Tampilkan riwayat absensi matkul.
-    def buka_riwayat(self, course_name):
-        logs = self.db.get_all_logs()
+    def buka_riwayat(self, course_id):
+        logs = self.db.get_logs_by_course(course_id)
         rows = [
             [str(l["id"]), l["nama_sesi"], l["nim"], l["nama_lengkap"],
              l["status"], str(l["waktu_scan"])]
-            for l in logs if l["nama_matkul"] == course_name
+            for l in logs
         ]
         self.history.isi_tabel(rows)
         self.stack.setCurrentIndex(1)

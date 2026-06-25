@@ -372,6 +372,20 @@ class DBManager:
         return [{"id": r[0], "nim": r[1], "nama_lengkap": r[2], "status": r[3],
                  "waktu_scan": r[4], "nama_sesi": r[5], "nama_matkul": r[6]} for r in cursor.fetchall()]
 
+    def get_logs_by_course(self, course_id):
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT l.id_riwayat, s.nim, s.nama_lengkap, l.status, l.waktu_scan, sess.nama_sesi, c.nama_matkul
+            FROM riwayat_absensi l
+            JOIN mahasiswa s ON l.nim=s.nim
+            JOIN sesi_absensi sess ON l.id_sesi=sess.id_sesi
+            JOIN mata_kuliah c ON sess.kode_matkul=c.kode_matkul
+            WHERE c.kode_matkul=?
+            ORDER BY l.waktu_scan DESC
+        """, (course_id,))
+        return [{"id": r[0], "nim": r[1], "nama_lengkap": r[2], "status": r[3],
+                 "waktu_scan": r[4], "nama_sesi": r[5], "nama_matkul": r[6]} for r in cursor.fetchall()]
+
     def get_logs_by_student(self, student_id):
         cursor = self.conn.cursor()
         cursor.execute("""
