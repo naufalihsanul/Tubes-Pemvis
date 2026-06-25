@@ -10,7 +10,6 @@ from ui import theme
 
 
 class DosenDashboard(QWidget):
-    # Inisialisasi halaman statistik dosen.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -30,7 +29,6 @@ class DosenDashboard(QWidget):
         layout.addLayout(cards)
         layout.addStretch()
 
-    # Muat data statistik dosen.
     def load_data(self):
         uid = SessionManager.get_user_id()
         if not uid: return
@@ -41,10 +39,8 @@ class DosenDashboard(QWidget):
         self.card_sesi.set_value(stats["sessions_today"])
 
 
-# ---------- Kelola Mata Kuliah ----------
 
 class ManageCourses(QWidget):
-    # Inisialisasi antarmuka kelola matkul.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -54,7 +50,6 @@ class ManageCourses(QWidget):
         lbl.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(lbl)
 
-        # Toolbar
         toolbar = QHBoxLayout()
         self.search = QLineEdit()
         self.search.setPlaceholderText("Cari nama matkul...")
@@ -67,7 +62,6 @@ class ManageCourses(QWidget):
         toolbar.addWidget(btn_add)
         layout.addLayout(toolbar)
 
-        # Tabel matkul
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(
@@ -78,19 +72,16 @@ class ManageCourses(QWidget):
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
 
-    # Muat daftar matkul dosen.
     def load_data(self):
         uid = SessionManager.get_user_id()
         if not uid: return
         self._data = self.db.get_all_courses(dosen_id=uid)
         self.tampilkan_data(self._data)
 
-    # Filter matkul sesuai pencarian.
     def filter_data(self):
         q = self.search.text().lower()
         self.tampilkan_data([c for c in self._data if q in c["nama_matkul"].lower()])
 
-    # Tampilkan matkul di tabel.
     def tampilkan_data(self, data):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(len(data))
@@ -116,7 +107,6 @@ class ManageCourses(QWidget):
             self.table.setCellWidget(i, 4, w)
         self.table.setSortingEnabled(True)
 
-    # Form tambah mata kuliah.
     def dialog_tambah(self):
         dlg = QDialog(self); dlg.setWindowTitle("Buat Matkul"); dlg.setFixedSize(360, 300)
         vl = QVBoxLayout(dlg)
@@ -130,7 +120,6 @@ class ManageCourses(QWidget):
                                                   inp_sem.text(), inp_thn.text(), dlg))
         vl.addWidget(btn); dlg.exec()
 
-    # Validasi dan simpan matkul.
     def simpan_matkul(self, kode, nama, sem, thn, dlg):
         if not kode or not nama:
             QMessageBox.warning(self, "Peringatan", "Kode dan nama wajib diisi!"); return
@@ -138,7 +127,6 @@ class ManageCourses(QWidget):
         if ok: dlg.accept(); self.load_data()
         else: QMessageBox.warning(self, "Gagal", msg)
 
-    # Form edit mata kuliah.
     def dialog_edit(self, cid, c):
         dlg = QDialog(self); dlg.setWindowTitle("Edit Matkul"); dlg.setFixedSize(360, 300)
         vl = QVBoxLayout(dlg)
@@ -152,7 +140,6 @@ class ManageCourses(QWidget):
                                                   inp_sem.text(), inp_thn.text(), dlg))
         vl.addWidget(btn); dlg.exec()
 
-    # Perbarui data mata kuliah.
     def update_matkul(self, cid, kode, nama, sem, thn, dlg):
         if not kode or not nama:
             QMessageBox.warning(self, "Peringatan", "Kode dan nama wajib diisi!"); return
@@ -160,7 +147,6 @@ class ManageCourses(QWidget):
         if ok: dlg.accept(); self.load_data()
         else: QMessageBox.warning(self, "Gagal", msg)
 
-    # Hapus matkul secara permanen.
     def hapus_matkul(self, cid, nama):
         ans = QMessageBox.question(self, "Konfirmasi Hapus",
                                    f"Hapus matkul '{nama}'?", QMessageBox.Yes | QMessageBox.No)

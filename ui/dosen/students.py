@@ -10,7 +10,6 @@ from ui import theme
 
 
 class ManageStudents(QWidget):
-    # Inisialisasi halaman mahasiswa kelas.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -19,11 +18,9 @@ class ManageStudents(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # Stacked: halaman 0 = daftar matkul, 1 = daftar mahasiswa
         self.stack = QStackedWidget()
         layout.addWidget(self.stack)
 
-        # --- Halaman 0: Pilih matkul ---
         pg0 = QWidget()
         vl0 = QVBoxLayout(pg0)
         lbl0 = QLabel("Pilih Kelas untuk Kelola Mahasiswa")
@@ -39,7 +36,6 @@ class ManageStudents(QWidget):
         vl0.addWidget(self.tbl_courses)
         self.stack.addWidget(pg0)
 
-        # --- Halaman 1: Daftar mahasiswa ---
         pg1 = QWidget()
         vl1 = QVBoxLayout(pg1)
 
@@ -55,7 +51,6 @@ class ManageStudents(QWidget):
         header.addStretch()
         vl1.addLayout(header)
 
-        # Tabel mahasiswa (termasuk pending)
         self.tbl_students = QTableWidget()
         self.tbl_students.setColumnCount(5)
         self.tbl_students.setHorizontalHeaderLabels(
@@ -71,7 +66,6 @@ class ManageStudents(QWidget):
         vl1.addWidget(self.tbl_students)
         self.stack.addWidget(pg1)
 
-    # Muat daftar mata kuliah dosen.
     def load_data(self):
         uid = SessionManager.get_user_id()
         courses = self.db.get_all_courses(dosen_id=uid)
@@ -91,14 +85,12 @@ class ManageStudents(QWidget):
             self.tbl_courses.setCellWidget(i, 2, w)
         self.tbl_courses.setSortingEnabled(True)
 
-    # Masuk ke daftar mahasiswa kelas.
     def _masuk_kelas(self, course_id, course_name):
         self._active_course_id = course_id
         self.lbl_kelas.setText(f"Mahasiswa: {course_name}")
         self._muat_mhs()
         self.stack.setCurrentIndex(1)
 
-    # Muat data mahasiswa aktif pending.
     def _muat_mhs(self):
         students = self.db.get_students_by_course(self._active_course_id, status=None)
         self.tbl_students.setSortingEnabled(False)
@@ -109,7 +101,6 @@ class ManageStudents(QWidget):
             self.tbl_students.setItem(i, 1, QTableWidgetItem(s["nama_lengkap"]))
             self.tbl_students.setItem(i, 2, QTableWidgetItem(s.get("jurusan", "-")))
 
-            # Item status dengan warna
             status_item = QTableWidgetItem(s.get("status", "").upper())
             if s.get("status") == "pending":
                 status_item.setForeground(Qt.darkYellow)
@@ -117,7 +108,6 @@ class ManageStudents(QWidget):
                 status_item.setForeground(Qt.darkGreen)
             self.tbl_students.setItem(i, 3, status_item)
 
-            # Tombol aksi: terima/tolak untuk pending, hapus untuk active
             w = QWidget(); hl = QHBoxLayout(w); hl.setContentsMargins(4, 0, 4, 0); hl.setSpacing(8); hl.setAlignment(Qt.AlignCenter)
             if s.get("status") == "pending":
                 btn_ok = QPushButton("Terima")
@@ -137,17 +127,14 @@ class ManageStudents(QWidget):
             self.tbl_students.setCellWidget(i, 4, w)
         self.tbl_students.setSortingEnabled(True)
 
-    # Setujui gabung kelas mahasiswa.
     def _terima_mhs(self, student_id):
         self.db.update_course_student_status(student_id, self._active_course_id, "active")
         self._muat_mhs()
 
-    # Tolak gabung kelas mahasiswa.
     def _tolak_mhs(self, student_id):
         self.db.delete_student_from_course(student_id, self._active_course_id)
         self._muat_mhs()
 
-    # Keluarkan mahasiswa dari kelas.
     def _hapus_mhs(self, student_id, nama):
         ans = QMessageBox.question(
             self, "Konfirmasi", f"Keluarkan '{nama}' dari kelas ini?",

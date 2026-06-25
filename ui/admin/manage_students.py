@@ -9,7 +9,6 @@ from ui import theme
 
 
 class GlobalStudents(QWidget):
-    # Inisialisasi antarmuka database mahasiswa.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -19,7 +18,6 @@ class GlobalStudents(QWidget):
         lbl.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(lbl)
 
-        # Toolbar: search + tombol tambah
         toolbar = QHBoxLayout()
         self.search = QLineEdit()
         self.search.setPlaceholderText("Cari NIM atau nama...")
@@ -32,7 +30,6 @@ class GlobalStudents(QWidget):
         toolbar.addWidget(btn_add)
         layout.addLayout(toolbar)
 
-        # Tabel daftar mahasiswa
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["NIM", "Nama", "Jurusan", "Aksi"])
@@ -41,12 +38,10 @@ class GlobalStudents(QWidget):
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
 
-    # Muat daftar semua mahasiswa.
     def load_data(self):
         self._data = self.db.get_all_students_global()
         self.tampilkan_data(self._data)
 
-    # Filter mahasiswa sesuai pencarian.
     def filter_data(self):
         q = self.search.text().lower()
         self.tampilkan_data([
@@ -54,7 +49,6 @@ class GlobalStudents(QWidget):
             if q in s["nim"].lower() or q in s["nama_lengkap"].lower()
         ])
 
-    # Tampilkan data ke dalam tabel.
     def tampilkan_data(self, data):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(len(data))
@@ -63,7 +57,6 @@ class GlobalStudents(QWidget):
             self.table.setItem(i, 1, QTableWidgetItem(s["nama_lengkap"]))
             self.table.setItem(i, 2, QTableWidgetItem(s.get("jurusan", "-")))
 
-            # Widget aksi per baris
             w = QWidget()
             hl = QHBoxLayout(w)
             hl.setContentsMargins(4, 0, 4, 0)
@@ -90,7 +83,6 @@ class GlobalStudents(QWidget):
             self.table.setCellWidget(i, 3, w)
         self.table.setSortingEnabled(True)
 
-    # Tampilkan form tambah mahasiswa.
     def dialog_tambah(self):
         dlg = QDialog(self)
         dlg.setWindowTitle("Tambah Mahasiswa")
@@ -113,7 +105,6 @@ class GlobalStudents(QWidget):
         vl.addWidget(btn)
         dlg.exec()
 
-    # Validasi dan simpan mahasiswa.
     def simpan_mahasiswa(self, nama, pwd, jur, dlg):
         if not nama or not pwd:
             QMessageBox.warning(self, "Peringatan", "Nama dan password wajib diisi!")
@@ -126,7 +117,6 @@ class GlobalStudents(QWidget):
         else:
             QMessageBox.warning(self, "Gagal", msg)
 
-    # Tampilkan form edit mahasiswa.
     def dialog_edit(self, sid, curr):
         dlg = QDialog(self)
         dlg.setWindowTitle("Edit Mahasiswa")
@@ -152,7 +142,6 @@ class GlobalStudents(QWidget):
         vl.addWidget(btn)
         dlg.exec()
 
-    # Perbarui data akun mahasiswa.
     def update_mahasiswa(self, sid, nim, nama, jur, pwd, dlg):
         if not nim or not nama:
             QMessageBox.warning(self, "Peringatan", "NIM dan nama wajib diisi!")
@@ -164,7 +153,6 @@ class GlobalStudents(QWidget):
         else:
             QMessageBox.warning(self, "Gagal", msg)
 
-    # Hapus data mahasiswa permanen.
     def hapus_mahasiswa(self, sid, nama):
         ans = QMessageBox.question(
             self, "Konfirmasi Hapus",

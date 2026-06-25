@@ -10,7 +10,6 @@ from ui import theme
 
 
 class AdminDashboard(QWidget):
-    # Inisialisasi halaman statistik admin.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -21,7 +20,6 @@ class AdminDashboard(QWidget):
         lbl.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(lbl)
 
-        # Baris kartu statistik
         cards = QHBoxLayout()
         self.card_dosen   = StatCard("Total Dosen",     "fa5s.chalkboard-teacher")
         self.card_mhs     = StatCard("Total Mahasiswa", "fa5s.user-graduate")
@@ -32,7 +30,6 @@ class AdminDashboard(QWidget):
         layout.addLayout(cards)
         layout.addStretch()
 
-    # Muat data statistik global.
     def load_data(self):
         stats = self.db.get_global_stats()
         self.card_dosen.set_value(stats["dosen_count"])
@@ -41,10 +38,8 @@ class AdminDashboard(QWidget):
         self.card_sesi.set_value(stats["sessions_today"])
 
 
-# ---------- Halaman Kelola Dosen ----------
 
 class ManageDosen(QWidget):
-    # Inisialisasi antarmuka kelola dosen.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -54,7 +49,6 @@ class ManageDosen(QWidget):
         lbl.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(lbl)
 
-        # Toolbar: search + tombol tambah
         toolbar = QHBoxLayout()
         self.search = QLineEdit()
         self.search.setPlaceholderText("Cari nama dosen...")
@@ -67,7 +61,6 @@ class ManageDosen(QWidget):
         toolbar.addWidget(btn_add)
         layout.addLayout(toolbar)
 
-        # Tabel daftar dosen
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["NIP", "Nama", "Aksi"])
@@ -76,17 +69,14 @@ class ManageDosen(QWidget):
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
 
-    # Muat daftar semua dosen.
     def load_data(self):
         self._data = self.db.get_all_dosen()
         self.tampilkan_data(self._data)
 
-    # Saring dosen berdasarkan nama.
     def filter_data(self):
         q = self.search.text().lower()
         self.tampilkan_data([d for d in self._data if q in d["nama_lengkap"].lower()])
 
-    # Tampilkan dosen di tabel.
     def tampilkan_data(self, data):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(len(data))
@@ -94,7 +84,6 @@ class ManageDosen(QWidget):
             self.table.setItem(i, 0, QTableWidgetItem(d["nama_pengguna"]))
             self.table.setItem(i, 1, QTableWidgetItem(d["nama_lengkap"]))
 
-            # Widget aksi: edit & hapus
             w = QWidget()
             hl = QHBoxLayout(w)
             hl.setContentsMargins(4, 0, 4, 0)
@@ -119,7 +108,6 @@ class ManageDosen(QWidget):
             self.table.setCellWidget(i, 2, w)
         self.table.setSortingEnabled(True)
 
-    # Tampilkan form tambah dosen.
     def dialog_tambah(self):
         dlg = QDialog(self)
         dlg.setWindowTitle("Tambah Dosen")
@@ -137,7 +125,6 @@ class ManageDosen(QWidget):
         vl.addWidget(btn_save)
         dlg.exec()
 
-    # Validasi dan simpan dosen.
     def simpan_dosen(self, nama, pwd, dlg):
         if not nama or not pwd:
             QMessageBox.warning(self, "Peringatan", "Nama dan password wajib diisi!")
@@ -150,7 +137,6 @@ class ManageDosen(QWidget):
         else:
             QMessageBox.warning(self, "Gagal", msg)
 
-    # Tampilkan form edit dosen.
     def dialog_edit(self, did, nama):
         dlg = QDialog(self)
         dlg.setWindowTitle("Edit Dosen")
@@ -170,7 +156,6 @@ class ManageDosen(QWidget):
         vl.addWidget(btn_save)
         dlg.exec()
 
-    # Perbarui data akun dosen.
     def update_dosen(self, did, nama, pwd, dlg):
         if not nama:
             QMessageBox.warning(self, "Peringatan", "Nama tidak boleh kosong!")
@@ -179,7 +164,6 @@ class ManageDosen(QWidget):
         dlg.accept()
         self.load_data()
 
-    # Hapus data dosen permanen.
     def hapus_dosen(self, did, nama):
         ans = QMessageBox.question(
             self, "Konfirmasi Hapus",
@@ -191,7 +175,6 @@ class ManageDosen(QWidget):
             self.load_data()
 
 
-# ---------- Halaman Semua Matkul ----------
 
 class AllCourses(QWidget):
     # Inisialisasi daftar semua matkul.
@@ -204,13 +187,11 @@ class AllCourses(QWidget):
         lbl.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(lbl)
 
-        # Search bar
         self.search = QLineEdit()
         self.search.setPlaceholderText("Cari nama matkul atau dosen...")
         self.search.textChanged.connect(self.filter_data)
         layout.addWidget(self.search)
 
-        # Tabel matkul
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(
@@ -221,12 +202,10 @@ class AllCourses(QWidget):
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
 
-    # Muat daftar mata kuliah.
     def load_data(self):
         self._data = self.db.get_all_courses()
         self.tampilkan_data(self._data)
 
-    # Saring matkul berdasarkan nama.
     def filter_data(self):
         q = self.search.text().lower()
         self.tampilkan_data([
@@ -234,7 +213,6 @@ class AllCourses(QWidget):
             if q in c["nama_matkul"].lower() or q in c.get("dosen_name", "").lower()
         ])
 
-    # Tampilkan matkul di tabel.
     def tampilkan_data(self, data):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(len(data))

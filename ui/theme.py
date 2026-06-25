@@ -1,4 +1,3 @@
-# Token warna & font — ubah di sini untuk ganti tema
 PRIMARY    = "#0d6efd"
 PRIMARY_DK = "#0b5ed7"
 DANGER     = "#dc3545"
@@ -13,16 +12,13 @@ TEXT_MUTED = "#6c757d"
 SIDEBAR_BG = "#1e2330"
 SIDEBAR_FG = "#adb5bd"
 
-
 def load_stylesheet(qss_path: str) -> str:
-    # Baca QSS lalu inject token warna
     try:
         with open(qss_path, "r") as f:
             qss = f.read()
     except FileNotFoundError:
         return ""
 
-    # Ganti placeholder token dengan nilai warna aktual
     replacements = {
         "{{PRIMARY}}":    PRIMARY,
         "{{PRIMARY_DK}}": PRIMARY_DK,

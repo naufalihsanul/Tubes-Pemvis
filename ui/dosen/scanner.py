@@ -15,7 +15,6 @@ from ui import theme
 
 
 class ScannerSession(QWidget):
-    # Inisialisasi halaman scanner absensi.
     def __init__(self, db):
         super().__init__()
         self.db = db
@@ -29,14 +28,12 @@ class ScannerSession(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # Stacked: 0=matkul, 1=daftar sesi, 2=scanner
         self.stack = QStackedWidget()
         layout.addWidget(self.stack)
         self.halaman_matkul()
         self.halaman_sesi()
         self.halaman_scanner()
 
-        # Timer kamera & pencocokan wajah
         self._cam = None
         self._timer_cam = QTimer()
         self._timer_cam.timeout.connect(self.update_frame)
@@ -44,7 +41,6 @@ class ScannerSession(QWidget):
         self._timer_match.setInterval(2000)  # Cocokkan setiap 2 detik
         self._timer_match.timeout.connect(self.cocokkan_wajah)
 
-    # Buat UI pilih kelas.
     def halaman_matkul(self):
         pg = QWidget(); vl = QVBoxLayout(pg)
         lbl = QLabel("Pilih Kelas untuk Sesi Absensi")
@@ -59,7 +55,6 @@ class ScannerSession(QWidget):
         vl.addWidget(self.tbl_courses)
         self.stack.addWidget(pg)
 
-    # Buat UI daftar pertemuan.
     def halaman_sesi(self):
         pg = QWidget(); vl = QVBoxLayout(pg)
 
@@ -94,7 +89,6 @@ class ScannerSession(QWidget):
         vl.addWidget(self.tbl_sessions)
         self.stack.addWidget(pg)
 
-    # Buat UI scanner kamera.
     def halaman_scanner(self):
         pg = QWidget(); vl = QVBoxLayout(pg)
 
@@ -106,21 +100,18 @@ class ScannerSession(QWidget):
         header.addWidget(btn_stop); header.addStretch()
         vl.addLayout(header)
 
-        # Label preview kamera
         self.cam_label = QLabel()
         self.cam_label.setFixedSize(640, 480)
         self.cam_label.setStyleSheet("background:black; border-radius:8px;")
         self.cam_label.setAlignment(Qt.AlignCenter)
         vl.addWidget(self.cam_label, alignment=Qt.AlignCenter)
 
-        # Status pencocokan wajah
         self.lbl_scan_status = QLabel("Arahkan wajah ke kamera...")
         self.lbl_scan_status.setAlignment(Qt.AlignCenter)
         self.lbl_scan_status.setStyleSheet("font-size: 16px; font-weight: bold;")
         vl.addWidget(self.lbl_scan_status)
         self.stack.addWidget(pg)
 
-    # Muat daftar matkul dosen.
     def load_data(self):
         uid = SessionManager.get_user_id()
         courses = self.db.get_all_courses(dosen_id=uid)
@@ -139,14 +130,12 @@ class ScannerSession(QWidget):
             self.tbl_courses.setCellWidget(i, 2, w)
         self.tbl_courses.setSortingEnabled(True)
 
-    # Buka halaman sesi kelas.
     def masuk_kelas(self, course_id, course_name):
         self._course_id = course_id
         self.lbl_sesi_title.setText(f"Pertemuan: {course_name}")
         self.muat_sesi()
         self.stack.setCurrentIndex(1)
 
-    # Muat daftar pertemuan kelas.
     def muat_sesi(self):
         sessions = self.db.get_sessions_by_course(self._course_id)
         self.tbl_sessions.setSortingEnabled(False)
@@ -159,7 +148,6 @@ class ScannerSession(QWidget):
 
             w = QWidget(); hl = QHBoxLayout(w); hl.setContentsMargins(4, 0, 4, 0); hl.setSpacing(8); hl.setAlignment(Qt.AlignCenter)
             if s["status"] == "open":
-                # Tombol nyalakan scanner
                 btn_scan = QPushButton("  Scan Absen")
                 btn_scan.setIcon(qta.icon("fa5s.camera", color="white"))
                 btn_scan.setStyleSheet(f"background:{theme.SUCCESS};color:white;")
@@ -181,7 +169,6 @@ class ScannerSession(QWidget):
             self.tbl_sessions.setCellWidget(i, 3, w)
         self.tbl_sessions.setSortingEnabled(True)
 
-    # Tampilkan form tambah pertemuan.
     def dialog_tambah(self):
         dlg = QDialog(self); dlg.setWindowTitle("Tambah Pertemuan"); dlg.setFixedSize(360, 180)
         vl = QVBoxLayout(dlg)
@@ -191,14 +178,12 @@ class ScannerSession(QWidget):
         btn.clicked.connect(lambda: self.simpan_sesi(inp.text(), dlg))
         vl.addWidget(btn); dlg.exec()
 
-    # Simpan data pertemuan baru.
     def simpan_sesi(self, nama, dlg):
         if not nama:
             QMessageBox.warning(self, "Peringatan", "Nama pertemuan wajib diisi!"); return
         self.db.open_session(self._course_id, nama)
         dlg.accept(); self.muat_sesi()
 
-    # Tampilkan form edit pertemuan.
     def dialog_edit(self, sid, sname, status):
         dlg = QDialog(self); dlg.setWindowTitle("Edit Pertemuan"); dlg.setFixedSize(360, 220)
         vl = QVBoxLayout(dlg)
@@ -214,14 +199,12 @@ class ScannerSession(QWidget):
             vl.addWidget(btn_open)
         dlg.exec()
 
-    # Hapus data pertemuan kelas.
     def hapus_sesi(self, sid, sname):
         ans = QMessageBox.question(self, "Hapus", f"Hapus pertemuan '{sname}'?",
                                    QMessageBox.Yes | QMessageBox.No)
         if ans == QMessageBox.Yes:
             self.db.delete_session(sid); self.muat_sesi()
 
-    # Nyalakan scanner absensi wajah.
     def mulai_scanner(self, session_id, session_name):
         self._session_id = session_id
         self._registered = self.db.get_students_by_course(self._course_id, status="active")
@@ -230,7 +213,6 @@ class ScannerSession(QWidget):
         self._timer_match.start()
         self.stack.setCurrentIndex(2)
 
-    # Matikan scanner tutup sesi.
     def tutup_sesi(self):
         self._timer_cam.stop(); self._timer_match.stop()
         if self._cam:
@@ -242,14 +224,12 @@ class ScannerSession(QWidget):
         self._session_id = None
         self.stack.setCurrentIndex(1); self.muat_sesi()
 
-    # Perbarui frame dari kamera.
     def update_frame(self):
         if not self._cam: return
         ret, frame = self._cam.read()
         if not ret: return
         frame = cv2.flip(frame, 1)
         self._frame = frame.copy()
-        # Gambar kotak deteksi wajah
         for (x, y, w, h) in self.engine.detect_faces(frame):
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 200, 100), 2)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -258,7 +238,6 @@ class ScannerSession(QWidget):
             QPixmap.fromImage(QImage(rgb.data, w, h, ch * w, QImage.Format_RGB888))
         )
 
-    # Cocokkan wajah dengan mahasiswa.
     def cocokkan_wajah(self):
         if not hasattr(self, "_frame"): return
         faces = self.engine.detect_faces(self._frame)
@@ -279,7 +258,6 @@ class ScannerSession(QWidget):
                 self.lbl_scan_status.setStyleSheet(f"font-size:16px;font-weight:bold;color:{theme.DANGER};")
                 self._last_id = -1; self._last_time = now
 
-    # Matikan kamera sementara saat pindah tab untuk mencegah resource leak
     def hideEvent(self, event):
         if self._cam:
             self._timer_cam.stop()
@@ -288,7 +266,6 @@ class ScannerSession(QWidget):
             self._cam = None
         super().hideEvent(event)
 
-    # Resume kamera jika kembali ke tab scanner saat sesi masih aktif
     def showEvent(self, event):
         super().showEvent(event)
         if self.stack.currentIndex() == 2 and not self._cam:
